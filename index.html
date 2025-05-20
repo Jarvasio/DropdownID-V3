@@ -86,7 +86,7 @@
     });
 
     async function carregarSubmissoes(formID) {
-      const url = `https://dropdown-id-v2.vercel.app/api/submissions?formID=${formID}`;
+      const url = `https://dropdown-id-v3.vercel.app/api/submissions?formID=${formID}`;
       try {
         const res = await fetch(url);
         const data = await res.json();
