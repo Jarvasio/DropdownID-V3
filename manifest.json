@@ -1,0 +1,33 @@
+{
+    "name": "Dropdown Dinâmico",
+    "description": "Dropdown com múltiplas caixas configuráveis via formID",
+    "icon": "list",
+    "properties": [
+      { 
+        "name": "IDform", 
+        "type": "text", 
+        "label": "ID do Formulário de Origem" 
+      },
+      { 
+        "name": "Empresa",
+        "type": "text",
+        "label": "ID da Pergunta - Empresa" 
+      },
+      { 
+        "name": "ObraType",
+        "type": "text",
+        "label": "ID da Pergunta - Tipo de Obra" 
+      },
+      { 
+        "name": "IDquestion1",
+        "type": "text", 
+        "label": "ID da Pergunta - Código da Obra" 
+      },
+      { 
+        "name": "IDquestion2",
+        "type": "text",
+        "label": "ID da Pergunta - Nome da Obra" 
+      }
+    ],
+    "tags": ["dropdown", "integração", "jotform"]
+}  

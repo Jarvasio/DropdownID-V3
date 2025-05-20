@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>Dropdown Dinâmico (via formID)</title>
+  <style>
+    label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+        margin-top: 20px;
+    }
+
+    select {
+        width: 100%;
+        padding: 0.5rem;
+        font-size: 1rem;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+    }
+
+    select:focus {
+        outline: none;
+        border-color: #3966fa;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+    }
+
+  </style>
+</head>
+<body>
+
+  <label for="empresa">Selecione a empresa:</label>
+  <select id="empresa"><option selected disabled>A carregar opções...</option></select>
+
+  <label for="obraType">Selecione o tipo de obra:</label>
+  <select id="obraType"><option selected disabled>A carregar opções...</option></select>
+
+  <label for="obra">Selecione a obra:</label>
+  <select id="obra"><option selected disabled>A carregar opções...</option></select>
+
+  <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <script>
+
+    $(document).ready(function() {
+    $('#empresa').select2();
+    $('#obra').select2();
+    $('#obraType').select2();
+    });
+ 
+    const selects = {
+      empresa: document.getElementById("empresa"),
+      obraType: document.getElementById("obraType"),
+      obra: document.getElementById("obra"),
+    };
+
+    let valoresSelecionados = {};
+    let todasSubmissoes = [];
+    let ids = {};
+
+    JFCustomWidget.subscribe("ready", async () => {
+      const settings = JFCustomWidget.getWidgetSettings();
+      console.log("Parâmetros recebidos:", settings);
+
+      const formID = (settings?.IDform || "").trim();
+      ids = {
+        empresa: (settings?.Empresa || "").trim(),
+        obraType: (settings?.ObraType || "").trim(),
+        codigoObra: (settings?.IDquestion || "").trim(),
+        nomeObra: (settings?.IDquestion2 || "").trim()
+      };
+
+      if (!/^\d{10,}$/.test(formID)) return alert("O parâmetro 'IDform' é inválido.");
+
+      for (const [key, id] of Object.entries(ids)) {
+        if (!/^\d+$/.test(id)) return alert(`ID da pergunta '${key}' inválido: ${id}`);
+      }
+
+      await carregarSubmissoes(formID);
+      JFCustomWidget.setFieldValue("");
+      JFCustomWidget.setReady();
+    });
+
+    async function carregarSubmissoes(formID) {
+      const url = `https://dropdown-id-v2.vercel.app/api/submissions?formID=${formID}`;
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!data || !Array.isArray(data.content)) throw new Error("Formato inesperado de dados.");
+
+        todasSubmissoes = data.content;
+        atualizarDropdowns(); // inicializa todos com dados completos
+
+      } catch (err) {
+        console.error("Erro ao consultar a API:", err);
+        alert("Erro ao carregar dados do formulário.");
+      }
+    }
+
+    function atualizarDropdowns() {
+      const filtros = valoresSelecionados;
+
+      const conjuntosFiltrados = {
+        empresa: new Set(),
+        obraType: new Set(),
+        obra: new Set()
+      };
+
+      todasSubmissoes.forEach(submissao => {
+        const respostas = submissao.answers || {};
+
+        const empresaVal = respostas[ids.empresa]?.answer || "";
+        const obraTypeVal = respostas[ids.obraType]?.answer || "";
+        const codigo = respostas[ids.codigoObra]?.answer || "";
+        const nome = respostas[ids.nomeObra]?.answer || "";
+        const obraVal = [codigo, nome].filter(Boolean).join(" - ").trim();
+
+        const match =
+          (!filtros.empresa || filtros.empresa === empresaVal) &&
+          (!filtros.obraType || filtros.obraType === obraTypeVal) &&
+          (!filtros.obra || filtros.obra === obraVal);
+
+        if (match) {
+          if (empresaVal) conjuntosFiltrados.empresa.add(empresaVal);
+          if (obraTypeVal) conjuntosFiltrados.obraType.add(obraTypeVal);
+          if (obraVal) conjuntosFiltrados.obra.add(obraVal);
+        }
+      });
+
+      for (const [campo, dropdown] of Object.entries(selects)) {
+        const valorAtual = dropdown.value;
+        dropdown.innerHTML = `<option value="">-- Limpar seleção --</option>`;
+        conjuntosFiltrados[campo].forEach(opcao => {
+          const opt = new Option(opcao, opcao);
+          if (opcao === valorAtual) opt.selected = true;
+          dropdown.appendChild(opt);
+        });
+      }
+    }
+
+    for (const [campo, select] of Object.entries(selects)) {
+      select.addEventListener("change", () => {
+        if (select.value) {
+          valoresSelecionados[campo] = select.value;
+        } else {
+          delete valoresSelecionados[campo]; // limpa se seleção for removida
+        }
+        console.log(`Selecionado (${campo}):`, select.value);
+        atualizarDropdowns(); // aplica filtro cruzado
+      });
+    }
+
+    JFCustomWidget.subscribe("submit", () => {
+      console.log("Submissão enviada com:", valoresSelecionados);
+      JFCustomWidget.sendSubmit({
+        value: JSON.stringify(valoresSelecionados)
+      });
+    });
+  </script>
+</body>
+</html>
