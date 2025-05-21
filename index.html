@@ -41,16 +41,10 @@
   <select id="obra"><option selected disabled>A carregar opções...</option></select>
 
   <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  
   <script>
 
-    $(document).ready(function() {
-    $('#empresa').select2();
-    $('#obra').select2();
-    $('#obraType').select2();
-    });
+    
  
     const selects = {
       empresa: document.getElementById("empresa"),
@@ -104,33 +98,34 @@
 
     function atualizarDropdowns() {
       const filtros = valoresSelecionados;
-    
+
       const conjuntosFiltrados = {
         empresa: new Set(),
         obraType: new Set(),
         obra: new Set()
       };
-    
+
       todasSubmissoes.forEach(submissao => {
         const respostas = submissao.answers || {};
-    
-        const codInt   = respostas["15"]?.answer?.trim() || "";  // Cod. Int
-        const tipo     = respostas["22"]?.answer?.trim() || "";  // Tipo
-        const id       = respostas["3"]?.answer?.trim() || "";
-        const desc     = respostas["4"]?.answer?.trim() || "";
-        const obraVal  = [id, desc].filter(Boolean).join(" - "); // construção manual
-    
-        const matchEmpresa = !filtros.empresa || filtros.empresa === codInt;
-        const matchTipo    = !filtros.obraType || filtros.obraType === tipo;
-        const matchObra    = !filtros.obra || filtros.obra === obraVal;
-    
-        if (matchEmpresa && matchTipo && matchObra) {
-          if (codInt) conjuntosFiltrados.empresa.add(codInt);
-          if (tipo) conjuntosFiltrados.obraType.add(tipo);
+
+        const empresaVal = respostas[ids.empresa]?.answer || "";
+        const obraTypeVal = respostas[ids.obraType]?.answer || "";
+        const codigo = respostas[ids.codigoObra]?.answer || "";
+        const nome = respostas[ids.nomeObra]?.answer || "";
+        const obraVal = [codigo, nome].filter(Boolean).join(" - ").trim();
+
+        const match =
+          (!filtros.empresa || filtros.empresa === empresaVal) &&
+          (!filtros.obraType || filtros.obraType === obraTypeVal) &&
+          (!filtros.obra || filtros.obra === obraVal);
+
+        if (match) {
+          if (empresaVal) conjuntosFiltrados.empresa.add(empresaVal);
+          if (obraTypeVal) conjuntosFiltrados.obraType.add(obraTypeVal);
           if (obraVal) conjuntosFiltrados.obra.add(obraVal);
         }
       });
-    
+
       for (const [campo, dropdown] of Object.entries(selects)) {
         const valorAtual = dropdown.value;
         dropdown.innerHTML = `<option value="">-- Limpar seleção --</option>`;
@@ -139,13 +134,8 @@
           if (opcao === valorAtual) opt.selected = true;
           dropdown.appendChild(opt);
         });
-    
-        if ($(dropdown).hasClass("select2-hidden-accessible")) {
-          $(dropdown).trigger("change.select2");
-        }
       }
     }
-
 
     for (const [campo, select] of Object.entries(selects)) {
       select.addEventListener("change", () => {
