@@ -70,7 +70,7 @@
       ids = {
         empresa: (settings?.Empresa || "").trim(),
         obraType: (settings?.ObraType || "").trim(),
-        codigoObra: (settings?.IDquestion1 || "").trim(),
+        codigoObra: (settings?.IDquestion || "").trim(),
         nomeObra: (settings?.IDquestion2 || "").trim()
       };
 
@@ -104,34 +104,34 @@
 
     function atualizarDropdowns() {
       const filtros = valoresSelecionados;
-    
+
       const conjuntosFiltrados = {
         empresa: new Set(),
         obraType: new Set(),
         obra: new Set()
       };
-    
+
       todasSubmissoes.forEach(submissao => {
         const respostas = submissao.answers || {};
-    
+
         const empresaVal = respostas[ids.codInt15]?.answer || "";
         const obraTypeVal = respostas[ids.tipo]?.answer || "";
         const codigo = respostas[ids.TextoA]?.answer || "";
         const nome = respostas[ids.TextoB]?.answer || "";
         const obraVal = [codigo, nome].filter(Boolean).join(" - ").trim();
-    
+
         const match =
           (!filtros.empresa || filtros.empresa === empresaVal) &&
           (!filtros.obraType || filtros.obraType === obraTypeVal) &&
           (!filtros.obra || filtros.obra === obraVal);
-    
+
         if (match) {
           if (empresaVal) conjuntosFiltrados.empresa.add(empresaVal);
           if (obraTypeVal) conjuntosFiltrados.obraType.add(obraTypeVal);
           if (obraVal) conjuntosFiltrados.obra.add(obraVal);
         }
       });
-    
+
       for (const [campo, dropdown] of Object.entries(selects)) {
         const valorAtual = dropdown.value;
         dropdown.innerHTML = `<option value="">-- Limpar seleção --</option>`;
@@ -142,19 +142,19 @@
         });
       }
     }
-    
+
     for (const [campo, select] of Object.entries(selects)) {
       select.addEventListener("change", () => {
         if (select.value) {
           valoresSelecionados[campo] = select.value;
         } else {
-          delete valoresSelecionados[campo];
+          delete valoresSelecionados[campo]; // limpa se seleção for removida
         }
         console.log(`Selecionado (${campo}):`, select.value);
-        atualizarDropdowns();
+        atualizarDropdowns(); // aplica filtro cruzado
       });
     }
-    
+
     JFCustomWidget.subscribe("submit", () => {
       console.log("Submissão enviada com:", valoresSelecionados);
       JFCustomWidget.sendSubmit({
