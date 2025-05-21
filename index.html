@@ -114,7 +114,7 @@
       todasSubmissoes.forEach(submissao => {
         const respostas = submissao.answers || {};
 
-        const empresaVal = respostas[ids.Empresa]?.answer || "";
+        const empresaVal = respostas[ids.empresa]?.answer || "";
         const obraTypeVal = respostas[ids.ObraType]?.answer || "";
         const codigo = respostas[ids.IDquestion]?.answer || "";
         const nome = respostas[ids.IDquestion2]?.answer || "";
