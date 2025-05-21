@@ -11,7 +11,7 @@
       font-size: 1rem;
       margin-top: 20px;
     }
-    
+
     select {
       width: 100%;
       padding: 0.5rem;
@@ -20,33 +20,35 @@
       border: 1px solid #ccc;
       margin-bottom: 10px;
     }
-    
+
     select:focus {
       outline: none;
       border-color: #3966fa;
       box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
     }
-    
+
     .select2-container {
       width: 100% !important;
     }
   </style>
+
+  <!-- Jotform e bibliotecas externas -->
+  <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 </head>
 <body>
 
   <label for="empresa">Selecione a empresa:</label>
   <select id="empresa"></select>
-  
+
   <label for="obraType">Selecione o tipo de obra:</label>
   <select id="obraType"></select>
-  
+
   <label for="obra">Selecione a obra:</label>
   <select id="obra"></select>
 
-
-  <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script>
     const selects = {
       empresa: document.getElementById("empresa"),
@@ -57,6 +59,15 @@
     let valoresSelecionados = {};
     let todasSubmissoes = [];
     let ids = {};
+
+    // Inicialização do Select2
+    $(document).ready(function () {
+      $('#empresa, #obra, #obraType').select2({
+        placeholder: "Selecione uma opção",
+        allowClear: true,
+        width: '100%'
+      });
+    });
 
     JFCustomWidget.subscribe("ready", async () => {
       const settings = JFCustomWidget.getWidgetSettings();
@@ -77,7 +88,6 @@
       }
 
       await carregarSubmissoes(formID);
-      // JFCustomWidget.setFieldValue(""); // Desativado
       JFCustomWidget.setReady();
     });
 
@@ -86,7 +96,7 @@
       try {
         const res = await fetch(url);
         const data = await res.json();
-        console.log("Resposta da API:", data);
+        console.log("Dados recebidos:", data);
 
         if (!data || !Array.isArray(data.content)) throw new Error("Formato inesperado de dados.");
 
@@ -101,7 +111,12 @@
 
     function atualizarDropdowns() {
       const filtros = valoresSelecionados;
-      const conjuntosFiltrados = { empresa: new Set(), obraType: new Set(), obra: new Set() };
+
+      const conjuntosFiltrados = {
+        empresa: new Set(),
+        obraType: new Set(),
+        obra: new Set()
+      };
 
       todasSubmissoes.forEach(submissao => {
         const respostas = submissao.answers || {};
@@ -126,24 +141,25 @@
       for (const [campo, dropdown] of Object.entries(selects)) {
         const $select = $(`#${campo}`);
         const valorAtual = dropdown.value;
-      
-        // Limpa opções anteriores
+
+        // Limpa opções antigas
         $select.empty();
-      
-        // Adiciona a opção "Limpar seleção"
+
+        // Adiciona a opção de limpar
         $select.append(new Option("-- Limpar seleção --", ""));
-      
+
         // Adiciona novas opções
         conjuntosFiltrados[campo].forEach(opcao => {
           const selected = opcao === valorAtual;
           $select.append(new Option(opcao, opcao, selected, selected));
         });
-      
-        // Atualiza Select2 visualmente
+
+        // Atualiza Select2
         $select.trigger("change.select2");
       }
+    }
 
-
+    // Gestão de alterações de seleção
     for (const [campo, select] of Object.entries(selects)) {
       select.addEventListener("change", () => {
         if (select.value) {
@@ -156,21 +172,13 @@
       });
     }
 
+    // Submissão dos dados
     JFCustomWidget.subscribe("submit", () => {
       console.log("Submissão enviada com:", valoresSelecionados);
       JFCustomWidget.sendSubmit({
         value: JSON.stringify(valoresSelecionados)
       });
     });
-
-    // Inicialização do Select2
-    $(document).ready(function() {
-    $('#empresa, #obra, #obraType').select2({
-      placeholder: "Selecione uma opção",
-      allowClear: true,
-      width: '100%'
-    });
-  });
   </script>
 </body>
 </html>
