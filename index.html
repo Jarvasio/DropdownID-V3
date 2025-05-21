@@ -38,7 +38,9 @@
   <select id="obraType"><option selected disabled>A carregar opções...</option></select>
 
   <label for="obra">Selecione a obra:</label>
-  <select id="obra"><option selected disabled>A carregar opções...</option></select>
+  <input id="obra" list="listaObra" placeholder="Procure por ID ou nome..." />
+  <datalist id="listaObra"></datalist>
+
 
   <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
   
@@ -124,10 +126,18 @@
           if (obraTypeVal) conjuntosFiltrados.obraType.add(obraTypeVal);
           if (obraVal) conjuntosFiltrados.obra.add(obraVal);
         }
-      });
+      }); 
 
-      for (const [campo, dropdown] of Object.entries(selects)) {
-        const valorAtual = dropdown.value;
+      if (dropdown.tagName === "INPUT") {
+        const datalist = document.getElementById("lista" + campo.charAt(0).toUpperCase() + campo.slice(1));
+        datalist.innerHTML = "";
+        conjuntosFiltrados[campo].forEach(opcao => {
+          const opt = document.createElement("option");
+          opt.value = opcao;
+          datalist.appendChild(opt);
+        });
+        dropdown.value = valorAtual || "";
+      } else {
         dropdown.innerHTML = `<option value="">-- Limpar seleção --</option>`;
         conjuntosFiltrados[campo].forEach(opcao => {
           const opt = new Option(opcao, opcao);
@@ -136,6 +146,18 @@
         });
       }
     }
+
+    select.addEventListener("change", () => {
+      const valor = select.value;
+      if (valor) {
+        valoresSelecionados[campo] = valor;
+      } else {
+        delete valoresSelecionados[campo];
+      }
+      console.log(`Selecionado (${campo}):`, valor);
+      atualizarDropdowns();
+    });
+
 
     for (const [campo, select] of Object.entries(selects)) {
       select.addEventListener("change", () => {
