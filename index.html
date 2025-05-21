@@ -26,18 +26,23 @@
       border-color: #3966fa;
       box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
     }
+    
+    .select2-container {
+      width: 100% !important;
+    }
   </style>
 </head>
 <body>
 
   <label for="empresa">Selecione a empresa:</label>
-  <select id="empresa"><option selected disabled>A carregar opções...</option></select>
-
+  <select id="empresa"></select>
+  
   <label for="obraType">Selecione o tipo de obra:</label>
-  <select id="obraType"><option selected disabled>A carregar opções...</option></select>
-
+  <select id="obraType"></select>
+  
   <label for="obra">Selecione a obra:</label>
-  <select id="obra"><option selected disabled>A carregar opções...</option></select>
+  <select id="obra"></select>
+
 
   <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -121,15 +126,23 @@
       for (const [campo, dropdown] of Object.entries(selects)) {
         const $select = $(`#${campo}`);
         const valorAtual = dropdown.value;
+      
+        // Limpa opções anteriores
         $select.empty();
+      
+        // Adiciona a opção "Limpar seleção"
         $select.append(new Option("-- Limpar seleção --", ""));
+      
+        // Adiciona novas opções
         conjuntosFiltrados[campo].forEach(opcao => {
           const selected = opcao === valorAtual;
           $select.append(new Option(opcao, opcao, selected, selected));
         });
+      
+        // Atualiza Select2 visualmente
         $select.trigger("change.select2");
       }
-    }
+
 
     for (const [campo, select] of Object.entries(selects)) {
       select.addEventListener("change", () => {
@@ -152,10 +165,12 @@
 
     // Inicialização do Select2
     $(document).ready(function() {
-      $('#empresa').select2();
-      $('#obra').select2();
-      $('#obraType').select2();
+    $('#empresa, #obra, #obraType').select2({
+      placeholder: "Selecione uma opção",
+      allowClear: true,
+      width: '100%'
     });
+  });
   </script>
 </body>
 </html>
