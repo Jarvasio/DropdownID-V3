@@ -104,34 +104,37 @@
 
     function atualizarDropdowns() {
       const filtros = valoresSelecionados;
-
+    
       const conjuntosFiltrados = {
         empresa: new Set(),
         obraType: new Set(),
         obra: new Set()
       };
-
+    
       todasSubmissoes.forEach(submissao => {
         const respostas = submissao.answers || {};
-
-        const empresaVal = respostas[ids.empresa]?.answer || "";
-        const obraTypeVal = respostas[ids.obraType]?.answer || "";
-        const codigo = respostas[ids.codigoObra]?.answer || "";
-        const nome = respostas[ids.nomeObra]?.answer || "";
-        const obraVal = [codigo, nome].filter(Boolean).join(" - ").trim();
-
-        const match =
-          (!filtros.empresa || filtros.empresa === empresaVal) &&
-          (!filtros.obraType || filtros.obraType === obraTypeVal) &&
-          (!filtros.obra || filtros.obra === obraVal);
-
+    
+        const codInterno = respostas[ids.empresa]?.answer || "";     // Cod. Int (OBR/EMPR/EQ)
+        const tipoObra   = respostas[ids.obraType]?.answer || "";    // CC/IR/AA/AP
+        const codObra    = respostas[ids.codigoObra]?.answer || "";
+        const nomeObra   = respostas[ids.nomeObra]?.answer || "";
+        const obraVal    = [codObra, nomeObra].filter(Boolean).join(" - ").trim();
+    
+        // Condição de correspondência geral
+        const matchEmpresa = !filtros.empresa || filtros.empresa === codInterno;
+        const matchTipo    = !filtros.obraType || filtros.obraType === tipoObra;
+        const matchObra    = !filtros.obra || filtros.obra === obraVal;
+    
+        const match = matchEmpresa && matchTipo && matchObra;
+    
+        // Se bater certo com os filtros ativos, inclui no conjunto
         if (match) {
-          if (empresaVal) conjuntosFiltrados.empresa.add(empresaVal);
-          if (obraTypeVal) conjuntosFiltrados.obraType.add(obraTypeVal);
-          if (obraVal) conjuntosFiltrados.obra.add(obraVal);
+          if (codInterno) conjuntosFiltrados.empresa.add(codInterno);
+          if (tipoObra)   conjuntosFiltrados.obraType.add(tipoObra);
+          if (obraVal)    conjuntosFiltrados.obra.add(obraVal);
         }
       });
-
+    
       for (const [campo, dropdown] of Object.entries(selects)) {
         const valorAtual = dropdown.value;
         dropdown.innerHTML = `<option value="">-- Limpar seleção --</option>`;
@@ -140,8 +143,14 @@
           if (opcao === valorAtual) opt.selected = true;
           dropdown.appendChild(opt);
         });
+    
+        // Atualiza visualização do Select2 (se estiver ativo)
+        if ($(dropdown).hasClass("select2-hidden-accessible")) {
+          $(dropdown).trigger("change.select2");
+        }
       }
     }
+
 
     for (const [campo, select] of Object.entries(selects)) {
       select.addEventListener("change", () => {
