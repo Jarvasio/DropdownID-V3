@@ -19,7 +19,7 @@
         "label": "ID da Pergunta - Tipo de Obra" 
       },
       { 
-        "name": "IDquestion1",
+        "name": "IDquestion",
         "type": "text", 
         "label": "ID da Pergunta - Código da Obra" 
       },
