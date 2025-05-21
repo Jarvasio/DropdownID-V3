@@ -2,103 +2,54 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <title>Dropdown Dinâmico Personalizado</title>
+  <title>Dropdown Dinâmico (via formID)</title>
   <style>
     label {
-      display: block;
-      font-weight: bold;
-      margin-bottom: 0.5rem;
-      font-size: 1rem;
-      margin-top: 20px;
+        display: block;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+        margin-top: 20px;
     }
 
-    .dropdown-wrapper {
-      position: relative;
-      width: 100%;
-      margin-bottom: 1rem;
+    select {
+        width: 100%;
+        padding: 0.5rem;
+        font-size: 1rem;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
     }
 
-    input[type="text"] {
-      width: 100%;
-      padding: 0.5rem;
-      font-size: 1rem;
-      border-radius: 8px;
-      border: 1px solid #ccc;
+    select:focus {
+        outline: none;
+        border-color: #3966fa;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
     }
 
-    input[type="text"]:focus {
-      outline: none;
-      border-color: #3966fa;
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
-    }
-
-    .dropdown-list {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      z-index: 1000;
-      max-height: 200px;
-      overflow-y: auto;
-      background: white;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-    }
-
-    .dropdown-list div {
-      padding: 10px;
-      cursor: pointer;
-    }
-
-    .dropdown-list div:hover {
-      background-color: #f0f0f0;
-    }
-
-    .hidden {
-      display: none;
-    }
   </style>
 </head>
 <body>
 
-  <div class="dropdown-wrapper">
-    <label for="empresaInput">Selecione a empresa:</label>
-    <input id="empresaInput" type="text" placeholder="Digite ou selecione..." autocomplete="off" />
-    <div id="empresaDropdown" class="dropdown-list hidden"></div>
-  </div>
+  <label for="empresa">Selecione a empresa:</label>
+  <select id="empresa"><option selected disabled>A carregar opções...</option></select>
 
-  <div class="dropdown-wrapper">
-    <label for="obraTypeInput">Selecione o tipo de obra:</label>
-    <input id="obraTypeInput" type="text" placeholder="Digite ou selecione..." autocomplete="off" />
-    <div id="obraTypeDropdown" class="dropdown-list hidden"></div>
-  </div>
+  <label for="obraType">Selecione o tipo de obra:</label>
+  <select id="obraType"><option selected disabled>A carregar opções...</option></select>
 
-  <div class="dropdown-wrapper">
-    <label for="obraInput">Selecione a obra:</label>
-    <input id="obraInput" type="text" placeholder="Digite ou selecione..." autocomplete="off" />
-    <div id="obraDropdown" class="dropdown-list hidden"></div>
-  </div>
+  <label for="obra">Selecione a obra:</label>
+  <select id="obra"><option selected disabled>A carregar opções...</option></select>
 
   <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
-
+  
   <script>
+
+    
+ 
     const selects = {
-      empresa: {
-        input: document.getElementById("empresaInput"),
-        dropdown: document.getElementById("empresaDropdown"),
-        options: []
-      },
-      obraType: {
-        input: document.getElementById("obraTypeInput"),
-        dropdown: document.getElementById("obraTypeDropdown"),
-        options: []
-      },
-      obra: {
-        input: document.getElementById("obraInput"),
-        dropdown: document.getElementById("obraDropdown"),
-        options: []
-      }
+      empresa: document.getElementById("empresa"),a
+      obraType: document.getElementById("obraType"),
+      obra: document.getElementById("obra"),
     };
 
     let valoresSelecionados = {};
@@ -107,6 +58,8 @@
 
     JFCustomWidget.subscribe("ready", async () => {
       const settings = JFCustomWidget.getWidgetSettings();
+      console.log("Parâmetros recebidos:", settings);
+
       const formID = (settings?.IDform || "").trim();
       ids = {
         empresa: (settings?.Empresa || "").trim(),
@@ -116,6 +69,7 @@
       };
 
       if (!/^\d{10,}$/.test(formID)) return alert("O parâmetro 'IDform' é inválido.");
+
       for (const [key, id] of Object.entries(ids)) {
         if (!/^\d+$/.test(id)) return alert(`ID da pergunta '${key}' inválido: ${id}`);
       }
@@ -130,9 +84,12 @@
       try {
         const res = await fetch(url);
         const data = await res.json();
+
         if (!data || !Array.isArray(data.content)) throw new Error("Formato inesperado de dados.");
+
         todasSubmissoes = data.content;
-        atualizarDropdowns();
+        atualizarDropdowns(); // inicializa todos com dados completos
+
       } catch (err) {
         console.error("Erro ao consultar a API:", err);
         alert("Erro ao carregar dados do formulário.");
@@ -141,6 +98,7 @@
 
     function atualizarDropdowns() {
       const filtros = valoresSelecionados;
+
       const conjuntosFiltrados = {
         empresa: new Set(),
         obraType: new Set(),
@@ -149,6 +107,7 @@
 
       todasSubmissoes.forEach(submissao => {
         const respostas = submissao.answers || {};
+
         const empresaVal = respostas[ids.empresa]?.answer || "";
         const obraTypeVal = respostas[ids.obraType]?.answer || "";
         const codigo = respostas[ids.codigoObra]?.answer || "";
@@ -167,61 +126,26 @@
         }
       });
 
-      selects.empresa.options = Array.from(conjuntosFiltrados.empresa);
-      selects.obraType.options = Array.from(conjuntosFiltrados.obraType);
-      selects.obra.options = Array.from(conjuntosFiltrados.obra);
-
-      atualizarDropdownVisual("empresa");
-      atualizarDropdownVisual("obraType");
-      atualizarDropdownVisual("obra");
-    }
-
-    function atualizarDropdownVisual(campo) {
-      const input = selects[campo].input;
-      const dropdown = selects[campo].dropdown;
-      const opcoes = selects[campo].options;
-      const filtro = input.value.toLowerCase();
-      const filtradas = opcoes.filter(opt => opt.toLowerCase().includes(filtro));
-      
-      dropdown.innerHTML = "";
-      if (filtradas.length === 0) {
-        dropdown.classList.add("hidden");
-        return;
+      for (const [campo, dropdown] of Object.entries(selects)) {
+        const valorAtual = dropdown.value;
+        dropdown.innerHTML = `<option value="">-- Limpar seleção --</option>`;
+        conjuntosFiltrados[campo].forEach(opcao => {
+          const opt = new Option(opcao, opcao);
+          if (opcao === valorAtual) opt.selected = true;
+          dropdown.appendChild(opt);
+        });
       }
-
-      filtradas.forEach(opcao => {
-        const div = document.createElement("div");
-        div.textContent = opcao;
-        div.onclick = () => {
-          input.value = opcao;
-          valoresSelecionados[campo] = opcao;
-          dropdown.classList.add("hidden");
-          atualizarDropdowns();
-        };
-        dropdown.appendChild(div);
-      });
-      dropdown.classList.remove("hidden");
     }
 
-    for (const campo of Object.keys(selects)) {
-      const input = selects[campo].input;
-      const dropdown = selects[campo].dropdown;
-
-      input.addEventListener("input", () => {
-        const valor = input.value.trim();
-        if (valor) valoresSelecionados[campo] = valor;
-        else delete valoresSelecionados[campo];
-        atualizarDropdownVisual(campo);
-      });
-
-      input.addEventListener("focus", () => {
-        atualizarDropdownVisual(campo);
-      });
-
-      document.addEventListener("click", (e) => {
-        if (!input.contains(e.target) && !dropdown.contains(e.target)) {
-          dropdown.classList.add("hidden");
+    for (const [campo, select] of Object.entries(selects)) {
+      select.addEventListener("change", () => {
+        if (select.value) {
+          valoresSelecionados[campo] = select.value;
+        } else {
+          delete valoresSelecionados[campo]; // limpa se seleção for removida
         }
+        console.log(`Selecionado (${campo}):`, select.value);
+        atualizarDropdowns(); // aplica filtro cruzado
       });
     }
 
