@@ -5,49 +5,49 @@
   <title>Dropdown Dinâmico (via formID)</title>
   <style>
     label {
-        display: block;
-        font-weight: bold;
-        margin-bottom: 0.5rem;
-        font-size: 1rem;
-        margin-top: 20px;
+      display: block;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+      margin-top: 20px;
     }
 
-    select {
-        width: 100%;
-        padding: 0.5rem;
-        font-size: 1rem;
-        border-radius: 8px;
-        border: 1px solid #ccc;
-        margin-bottom: 10px;
+    input[list] {
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
     }
 
-    select:focus {
-        outline: none;
-        border-color: #3966fa;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+    input[list]:focus {
+      outline: none;
+      border-color: #3966fa;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
     }
-
   </style>
 </head>
 <body>
 
   <label for="empresa">Selecione a empresa:</label>
-  <select id="empresa"><option selected disabled>A carregar opções...</option></select>
+  <input id="empresa" list="listaEmpresa" placeholder="Digite ou selecione uma opção..." />
+  <datalist id="listaEmpresa"></datalist>
 
   <label for="obraType">Selecione o tipo de obra:</label>
-  <select id="obraType"><option selected disabled>A carregar opções...</option></select>
+  <input id="obraType" list="listaObraType" placeholder="Digite ou selecione uma opção..." />
+  <datalist id="listaObraType"></datalist>
 
   <label for="obra">Selecione a obra:</label>
-  <select id="obra"><option selected disabled>A carregar opções...</option></select>
+  <input id="obra" list="listaObra" placeholder="Digite ou selecione uma opção..." />
+  <datalist id="listaObra"></datalist>
 
+  <script type="text/javascript" src="dropdown.js"></script>
   <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
-  
-  <script>
 
-    
- 
+  <script>
     const selects = {
-      empresa: document.getElementById("empresa"),a
+      empresa: document.getElementById("empresa"),
       obraType: document.getElementById("obraType"),
       obra: document.getElementById("obra"),
     };
@@ -88,8 +88,7 @@
         if (!data || !Array.isArray(data.content)) throw new Error("Formato inesperado de dados.");
 
         todasSubmissoes = data.content;
-        atualizarDropdowns(); // inicializa todos com dados completos
-
+        atualizarDropdowns();
       } catch (err) {
         console.error("Erro ao consultar a API:", err);
         alert("Erro ao carregar dados do formulário.");
@@ -98,7 +97,6 @@
 
     function atualizarDropdowns() {
       const filtros = valoresSelecionados;
-
       const conjuntosFiltrados = {
         empresa: new Set(),
         obraType: new Set(),
@@ -107,7 +105,6 @@
 
       todasSubmissoes.forEach(submissao => {
         const respostas = submissao.answers || {};
-
         const empresaVal = respostas[ids.empresa]?.answer || "";
         const obraTypeVal = respostas[ids.obraType]?.answer || "";
         const codigo = respostas[ids.codigoObra]?.answer || "";
@@ -126,26 +123,27 @@
         }
       });
 
-      for (const [campo, dropdown] of Object.entries(selects)) {
-        const valorAtual = dropdown.value;
-        dropdown.innerHTML = `<option value="">-- Limpar seleção --</option>`;
+      for (const campo of ["empresa", "obraType", "obra"]) {
+        const datalist = document.getElementById("lista" + campo.charAt(0).toUpperCase() + campo.slice(1));
+        datalist.innerHTML = "";
         conjuntosFiltrados[campo].forEach(opcao => {
-          const opt = new Option(opcao, opcao);
-          if (opcao === valorAtual) opt.selected = true;
-          dropdown.appendChild(opt);
+          const opt = document.createElement("option");
+          opt.value = opcao;
+          datalist.appendChild(opt);
         });
       }
     }
 
-    for (const [campo, select] of Object.entries(selects)) {
-      select.addEventListener("change", () => {
-        if (select.value) {
-          valoresSelecionados[campo] = select.value;
+    for (const [campo, input] of Object.entries(selects)) {
+      input.addEventListener("input", () => {
+        const valor = input.value.trim();
+        if (valor) {
+          valoresSelecionados[campo] = valor;
         } else {
-          delete valoresSelecionados[campo]; // limpa se seleção for removida
+          delete valoresSelecionados[campo];
         }
-        console.log(`Selecionado (${campo}):`, select.value);
-        atualizarDropdowns(); // aplica filtro cruzado
+        console.log(`Selecionado (${campo}):`, valor);
+        atualizarDropdowns();
       });
     }
 
