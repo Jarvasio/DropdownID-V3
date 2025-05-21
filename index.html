@@ -41,14 +41,14 @@
 
   <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-  <script>
 
+  <script>
     $(document).ready(function() {
-    $('#empresa').select2();
-    $('#obra').select2();
-    $('#obraType').select2();
+      $('#empresa').select2();
+      $('#obra').select2();
+      $('#obraType').select2();
     });
 
     const selects = {
@@ -76,7 +76,7 @@
       if (!/^\d{10,}$/.test(formID)) return alert("O parâmetro 'IDform' é inválido.");
 
       for (const [key, id] of Object.entries(ids)) {
-        if (!/^\d+$/.test(id)) return alert("ID da pergunta '${key}' inválido: ${id}");
+        if (!/^\d+$/.test(id)) return alert(`ID da pergunta '${key}' inválido: ${id}`);
       }
 
       await carregarSubmissoes(formID);
@@ -85,7 +85,7 @@
     });
 
     async function carregarSubmissoes(formID) {
-      const url = 'https://dropdown-id-v3.vercel.app/api/submissions?formID=${formID}';
+      const url = `https://dropdown-id-v3.vercel.app/api/submissions?formID=${formID}`;
       try {
         const res = await fetch(url);
         const data = await res.json();
@@ -93,7 +93,7 @@
         if (!data || !Array.isArray(data.content)) throw new Error("Formato inesperado de dados.");
 
         todasSubmissoes = data.content;
-        atualizarDropdowns(); // inicializa todos com dados completos
+        atualizarDropdowns();
 
       } catch (err) {
         console.error("Erro ao consultar a API:", err);
@@ -112,7 +112,6 @@
 
       todasSubmissoes.forEach(submissao => {
         const respostas = submissao.answers || {};
-
         const empresaVal = respostas[ids.empresa]?.answer || "";
         const obraTypeVal = respostas[ids.obraType]?.answer || "";
         const codigo = respostas[ids.codigoObra]?.answer || "";
@@ -131,23 +130,23 @@
         }
       });
 
-     for (const [campo, dropdown] of Object.entries(selects)) {
+      for (const [campo, dropdown] of Object.entries(selects)) {
         const $select = $(`#${campo}`);
         const valorAtual = dropdown.value;
-      
+
         // Limpa opções antigas
         $select.empty();
-      
+
         // Adiciona a opção de limpar
         $select.append(new Option("-- Limpar seleção --", ""));
-      
+
         // Adiciona novas opções
         conjuntosFiltrados[campo].forEach(opcao => {
           const selected = opcao === valorAtual;
           $select.append(new Option(opcao, opcao, selected, selected));
         });
-      
-        // Força o Select2 a atualizar a lista
+
+        // Força o Select2 a atualizar
         $select.trigger("change.select2");
       }
     }
@@ -157,10 +156,10 @@
         if (select.value) {
           valoresSelecionados[campo] = select.value;
         } else {
-          delete valoresSelecionados[campo]; // limpa se seleção for removida
+          delete valoresSelecionados[campo];
         }
-        console.log("Selecionado ('${campo}'):", select.value);
-        atualizarDropdowns(); // aplica filtro cruzado
+        console.log(`Selecionado (${campo}):`, select.value);
+        atualizarDropdowns();
       });
     }
 
