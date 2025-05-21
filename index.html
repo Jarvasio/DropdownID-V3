@@ -114,17 +114,16 @@
       todasSubmissoes.forEach(submissao => {
         const respostas = submissao.answers || {};
     
-        const codInt     = respostas[ids.empresa]?.answer?.trim() || "";        // Cod. Int
-        const tipo       = respostas[ids.obraType]?.answer?.trim() || "";       // Tipo
-        const id         = respostas[ids.codigoObra]?.answer?.toString().trim() || "";
-        const descricao  = respostas[ids.nomeObra]?.answer?.trim() || "";
-        const obraVal    = [id, descricao].filter(Boolean).join(" - ");
+        const codInt   = respostas["15"]?.answer?.trim() || "";  // Cod. Int
+        const tipo     = respostas["22"]?.answer?.trim() || "";  // Tipo
+        const id       = respostas["3"]?.answer?.trim() || "";
+        const desc     = respostas["4"]?.answer?.trim() || "";
+        const obraVal  = [id, desc].filter(Boolean).join(" - "); // construção manual
     
         const matchEmpresa = !filtros.empresa || filtros.empresa === codInt;
         const matchTipo    = !filtros.obraType || filtros.obraType === tipo;
         const matchObra    = !filtros.obra || filtros.obra === obraVal;
     
-        // Só mantém entradas que coincidem com os filtros aplicados
         if (matchEmpresa && matchTipo && matchObra) {
           if (codInt) conjuntosFiltrados.empresa.add(codInt);
           if (tipo) conjuntosFiltrados.obraType.add(tipo);
@@ -141,7 +140,6 @@
           dropdown.appendChild(opt);
         });
     
-        // Atualiza visualização se Select2 estiver ativo
         if ($(dropdown).hasClass("select2-hidden-accessible")) {
           $(dropdown).trigger("change.select2");
         }
