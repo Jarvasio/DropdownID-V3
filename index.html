@@ -86,7 +86,7 @@
     });
 
     async function carregarSubmissoes(formID) {
-      const url = `https://dropdown-id-v2.vercel.app/api/submissions?formID=${formID}`;
+      const url = `https://dropdown-id-v3.vercel.app/api/submissions?formID=${formID}`;
       try {
         const res = await fetch(url);
         const data = await res.json();
@@ -114,10 +114,10 @@
       todasSubmissoes.forEach(submissao => {
         const respostas = submissao.answers || {};
 
-        const empresaVal = respostas[ids.codInt15]?.answer || "";
-        const obraTypeVal = respostas[ids.tipo]?.answer || "";
-        const codigo = respostas[ids.TextoA]?.answer || "";
-        const nome = respostas[ids.TextoB]?.answer || "";
+        const empresaVal = respostas[ids.empresa]?.answer || "";
+        const obraTypeVal = respostas[ids.obraType]?.answer || "";
+        const codigo = respostas[ids.codigoObra]?.answer || "";
+        const nome = respostas[ids.nomeObra]?.answer || "";
         const obraVal = [codigo, nome].filter(Boolean).join(" - ").trim();
 
         const match =
@@ -163,4 +163,4 @@
     });
   </script>
 </body>
-</html> 
+</html>
