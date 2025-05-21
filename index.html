@@ -32,7 +32,7 @@
     }
   </style>
 
-  <!-- Jotform e bibliotecas externas -->
+  <!-- Jotform + bibliotecas externas -->
   <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -60,15 +60,34 @@
     let todasSubmissoes = [];
     let ids = {};
 
-    // Inicialização do Select2
+    // Inicializa Select2
     $(document).ready(function () {
       $('#empresa, #obra, #obraType').select2({
         placeholder: "Selecione uma opção",
         allowClear: true,
         width: '100%'
       });
+
+      // Eventos de mudança com Select2
+      for (const campo of Object.keys(selects)) {
+        const $select = $(`#${campo}`);
+
+        $select.on("select2:select select2:unselect", function () {
+          const valor = $select.val();
+
+          if (valor) {
+            valoresSelecionados[campo] = valor;
+          } else {
+            delete valoresSelecionados[campo];
+          }
+
+          console.log(`Selecionado (${campo}):`, valor);
+          atualizarDropdowns();
+        });
+      }
     });
 
+    // Quando o widget estiver pronto
     JFCustomWidget.subscribe("ready", async () => {
       const settings = JFCustomWidget.getWidgetSettings();
       console.log("Parâmetros recebidos:", settings);
@@ -91,6 +110,7 @@
       JFCustomWidget.setReady();
     });
 
+    // Função para buscar os dados da API
     async function carregarSubmissoes(formID) {
       const url = `https://dropdown-id-v3.vercel.app/api/submissions?formID=${formID}`;
       try {
@@ -109,6 +129,7 @@
       }
     }
 
+    // Atualização cruzada dos dropdowns
     function atualizarDropdowns() {
       const filtros = valoresSelecionados;
 
@@ -142,37 +163,19 @@
         const $select = $(`#${campo}`);
         const valorAtual = dropdown.value;
 
-        // Limpa opções antigas
         $select.empty();
-
-        // Adiciona a opção de limpar
         $select.append(new Option("-- Limpar seleção --", ""));
 
-        // Adiciona novas opções
         conjuntosFiltrados[campo].forEach(opcao => {
           const selected = opcao === valorAtual;
           $select.append(new Option(opcao, opcao, selected, selected));
         });
 
-        // Atualiza Select2
         $select.trigger("change.select2");
       }
     }
 
-    // Gestão de alterações de seleção
-    for (const [campo, select] of Object.entries(selects)) {
-      select.addEventListener("change", () => {
-        if (select.value) {
-          valoresSelecionados[campo] = select.value;
-        } else {
-          delete valoresSelecionados[campo];
-        }
-        console.log(`Selecionado (${campo}):`, select.value);
-        atualizarDropdowns();
-      });
-    }
-
-    // Submissão dos dados
+    // Submissão final
     JFCustomWidget.subscribe("submit", () => {
       console.log("Submissão enviada com:", valoresSelecionados);
       JFCustomWidget.sendSubmit({
