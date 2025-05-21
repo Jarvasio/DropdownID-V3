@@ -76,7 +76,7 @@
       if (!/^\d{10,}$/.test(formID)) return alert("O parâmetro 'IDform' é inválido.");
 
       for (const [key, id] of Object.entries(ids)) {
-        if (!/^\d+$/.test(id)) return alert(ID da pergunta '${key}' inválido: ${id});
+        if (!/^\d+$/.test(id)) return alert("ID da pergunta '${key}' inválido: ${id}");
       }
 
       await carregarSubmissoes(formID);
@@ -85,7 +85,7 @@
     });
 
     async function carregarSubmissoes(formID) {
-      const url = https://dropdown-id-v3.vercel.app/api/submissions?formID=${formID};
+      const url = 'https://dropdown-id-v3.vercel.app/api/submissions?formID=${formID}';
       try {
         const res = await fetch(url);
         const data = await res.json();
@@ -159,7 +159,7 @@
         } else {
           delete valoresSelecionados[campo]; // limpa se seleção for removida
         }
-        console.log(Selecionado (${campo}):, select.value);
+        console.log("Selecionado ('${campo}'):", select.value);
         atualizarDropdowns(); // aplica filtro cruzado
       });
     }
