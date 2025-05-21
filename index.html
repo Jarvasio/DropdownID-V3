@@ -32,15 +32,14 @@
 <body>
 
   <label for="empresa">Selecione a empresa:</label>
-  <select id="empresa" multiple multiselect-search="true"><option selected disabled>A carregar opções...</option></select>
+  <select id="empresa"><option selected disabled>A carregar opções...</option></select>
 
   <label for="obraType">Selecione o tipo de obra:</label>
   <select id="obraType"><option selected disabled>A carregar opções...</option></select>
 
-  <label for="obra">Selecione o tipo de obra:</label>
+  <label for="obra">Selecione a obra:</label>
   <select id="obra"><option selected disabled>A carregar opções...</option></select>
 
-  <script type="text/javascript" src="multiselect-dropdown.js"></script>
   <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
   
   <script>
@@ -48,7 +47,7 @@
     
  
     const selects = {
-      empresa: document.getElementById("empresa"),
+      empresa: document.getElementById("empresa"),a
       obraType: document.getElementById("obraType"),
       obra: document.getElementById("obra"),
     };
@@ -125,18 +124,10 @@
           if (obraTypeVal) conjuntosFiltrados.obraType.add(obraTypeVal);
           if (obraVal) conjuntosFiltrados.obra.add(obraVal);
         }
-      }); 
+      });
 
-      if (dropdown.tagName === "INPUT") {
-        const datalist = document.getElementById("lista" + campo.charAt(0).toUpperCase() + campo.slice(1));
-        datalist.innerHTML = "";
-        conjuntosFiltrados[campo].forEach(opcao => {
-          const opt = document.createElement("option");
-          opt.value = opcao;
-          datalist.appendChild(opt);
-        });
-        dropdown.value = valorAtual || "";
-      } else {
+      for (const [campo, dropdown] of Object.entries(selects)) {
+        const valorAtual = dropdown.value;
         dropdown.innerHTML = `<option value="">-- Limpar seleção --</option>`;
         conjuntosFiltrados[campo].forEach(opcao => {
           const opt = new Option(opcao, opcao);
@@ -145,18 +136,6 @@
         });
       }
     }
-
-    select.addEventListener("change", () => {
-      const valor = select.value;
-      if (valor) {
-        valoresSelecionados[campo] = valor;
-      } else {
-        delete valoresSelecionados[campo];
-      }
-      console.log(`Selecionado (${campo}):`, valor);
-      atualizarDropdowns();
-    });
-
 
     for (const [campo, select] of Object.entries(selects)) {
       select.addEventListener("change", () => {
