@@ -86,6 +86,11 @@
               delete valoresSelecionados["obraType"];
               delete valoresSelecionados["obra"];
             }
+
+            if (campo === "obraType") {
+              $('#obra').val(null).trigger('change');
+              delete valoresSelecionados["obra"];
+            }
           }
 
           console.log(`Selecionado (${campo}):`, valor);
