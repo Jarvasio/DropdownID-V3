@@ -86,10 +86,6 @@
         });
       }
     });
-    
-    if ($('#empresa').val() === '') {
-      $('#obraType, #obra').val(null).trigger('change');
-    }
 
     // Quando o widget estiver pronto
     JFCustomWidget.subscribe("ready", async () => {
