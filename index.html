@@ -80,7 +80,7 @@
           } else {
             delete valoresSelecionados[campo];
           }
-
+          
           console.log(`Selecionado (${campo}):`, valor);
           atualizarDropdowns();
         });
@@ -163,13 +163,12 @@
         const $select = $(`#${campo}`);
         const valorAtual = dropdown.value;
 
-        $select.empty();
-        $select.append(new Option("-- Limpar seleção --", ""));
-
-        conjuntosFiltrados[campo].forEach(opcao => {
+        conjuntosFiltrados[campo](opcao => {
           const selected = opcao === valorAtual;
           $select.append(new Option(opcao, opcao, selected, selected));
         });
+
+        
 
         $select.trigger("change.select2");
       }
