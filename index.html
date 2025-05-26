@@ -67,7 +67,11 @@
         allowClear: true,
         width: '100%'
       });
-
+      
+      if ($('#empresaSelect').val() === '') {
+        $('#mySelect2').val(null).trigger('change');
+      }
+      
       // Eventos de mudança com Select2
       for (const campo of Object.keys(selects)) {
         const $select = $(`#${campo}`);
