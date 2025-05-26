@@ -67,7 +67,7 @@
         allowClear: true,
         width: '100%'
       });
-      
+
       // Eventos de mudança com Select2
       for (const campo of Object.keys(selects)) {
         const $select = $(`#${campo}`);
@@ -162,6 +162,9 @@
       for (const [campo, dropdown] of Object.entries(selects)) {
         const $select = $(`#${campo}`);
         const valorAtual = dropdown.value;
+
+        $select.empty();
+        $select.append(new Option("-- Limpar seleção --", ""));
 
         conjuntosFiltrados[campo].forEach(opcao => {
           const selected = opcao === valorAtual;
